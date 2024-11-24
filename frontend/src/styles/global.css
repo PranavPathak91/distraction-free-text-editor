@@ -58,10 +58,16 @@
 }
 
 /* Global Reset and Base Styles */
+body, html {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  max-width: 100%;
   transition: 
     background-color var(--transition-smooth),
     color var(--transition-smooth),
