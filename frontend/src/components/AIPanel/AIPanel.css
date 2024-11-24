@@ -31,10 +31,11 @@
 }
 
 .ai-message.user {
-  background-color: var(--color-primary);
-  color: white;
+  background-color: white;
+  color: var(--color-neutral-700);
   align-self: flex-end;
   margin-left: auto;
+  border: 1px solid var(--color-neutral-300);
 }
 
 .ai-message.ai {
