@@ -1,0 +1,26 @@
+{
+    "name": "React Text Editor Dev Container",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:0-20",
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "latest"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "msjsdiag.vscode-react-native"
+            ]
+        }
+    },
+    "postCreateCommand": "cd frontend && npm install",
+    "forwardPorts": [3000],
+    "portsAttributes": {
+        "3000": {
+            "label": "Application",
+            "onAutoForward": "openPreview"
+        }
+    }
+}

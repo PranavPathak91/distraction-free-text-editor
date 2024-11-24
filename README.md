@@ -1,66 +1,56 @@
-# Distraction-Free Writing Application
+# Distraction-Free Text Editor 🧘‍♀️
 
-## 🚀 Project Overview
+## Overview
+A minimalist writing tool designed to enhance focus and productivity, featuring an advanced quiet mode.
 
-A minimalist, intuitive text editing application designed to provide authors with a distraction-free writing environment.
+## Features
+- 🤫 Distraction-free writing mode
+- 📝 Emoji-based interactions
+- 🧭 Clean, responsive UI
+- 📊 Word count and reading time
 
-## 🏗️ Project Structure
-
-```
-text-editor-app/
-├── frontend/
-│   ├── src/
-│   │   ├── components/        # Reusable React components
-│   │   │   └── MenuBar/       # Navigation and document management
-│   │   ├── context/           # State management
-│   │   ├── services/          # Data and API services
-│   │   ├── styles/            # Global and component styling
-│   │   ├── utils/             # Utility functions
-│   │   ├── App.js             # Main application component
-│   │   └── index.js           # Entry point
-│   ├── package.json           # Project dependencies
-│   └── node_modules/          # Installed dependencies
-├── README.md                  # Project documentation
-└── code_export.txt            # Detailed project structure
-```
-
-## 🛠️ Key Features
-
-- Emoji-enhanced UI
-- Project-based document organization
-- Inline chapter name editing
-- Distraction-free writing interface
-
-## 🔧 Technologies
-
-- React
-- React Hooks
-- Context API
-- Local Storage
-- CSS Variables
-
-## 🚀 Getting Started
+## Setup and Running
 
 ### Prerequisites
+- Node.js (v16 or later)
+- npm
 
-- Node.js (v14+)
-- npm or yarn
-
-### Installation
-
+### Local Development
 1. Clone the repository
-2. Navigate to `frontend/`
-3. Run `npm install`
-4. Run `npm start`
+```bash
+git clone https://github.com/PranavPathak91/distraction-free-text-editor.git
+cd distraction-free-text-editor
+```
 
-## 🌈 Theming
+2. Install Frontend Dependencies
+```bash
+cd frontend
+npm install
+```
 
-Supports light and dark modes with customizable color palette.
+3. Start Development Server
+```bash
+npm start
+```
 
-## 🤝 Contributing
+### GitHub Codespaces
+1. Click "Code" > "Codespaces" > "Create codespace on main"
+2. Codespace will automatically:
+   - Install dependencies
+   - Start development server
+3. Access the app at the forwarded port (usually :3000)
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+## Development Scripts
+- `npm start`: Start development server
+- `npm run build`: Create production build
+- `npm test`: Run test suite
 
-## 📝 License
+## Contributing
+1. Fork the repository
+2. Create your feature branch
+3. Commit changes
+4. Push to the branch
+5. Create a Pull Request
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+## License
+MIT License
