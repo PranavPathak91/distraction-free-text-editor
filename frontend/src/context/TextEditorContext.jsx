@@ -275,10 +275,32 @@ export function TextEditorProvider({ children }) {
       // Perform document update
       const updatedDocument = DocumentService.updateDocument(id, updates);
       
+      // Dispatch action to update both current document and project documents
       dispatch({ 
         type: ActionTypes.UPDATE_DOCUMENT, 
         payload: updatedDocument 
       });
+
+      // Manually update the project's documents to ensure real-time update
+      if (state.currentProject) {
+        const updatedProjects = state.projects.map(project => {
+          if (project.id === state.currentProject.id) {
+            return {
+              ...project,
+              documents: project.documents.map(doc => 
+                doc.id === id ? updatedDocument : doc
+              )
+            };
+          }
+          return project;
+        });
+
+        // Dispatch project update to force re-render
+        dispatch({
+          type: ActionTypes.LOAD_PROJECTS,
+          payload: updatedProjects
+        });
+      }
 
       console.log('Document updated successfully:', updatedDocument);
       console.groupEnd();

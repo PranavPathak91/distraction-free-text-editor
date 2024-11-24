@@ -51,11 +51,16 @@ function TextEditor() {
   const handleNameChange = (e) => {
     // Use the current document's ID when updating the name
     const documentId = state.currentDocument?.id;
+    const newName = e.target.value;
     
     if (documentId) {
-      updateDocument(documentId, { 
-        name: e.target.value || 'Untitled Document' 
-      });
+      // Only update if there's actual text, don't force 'Untitled Document'
+      if (newName.trim() !== '') {
+        updateDocument(documentId, { name: newName });
+      } else {
+        // If empty, just update with empty string
+        updateDocument(documentId, { name: '' });
+      }
     } else {
       console.error('No current document to update');
     }
@@ -67,7 +72,7 @@ function TextEditor() {
         <input 
           ref={nameInputRef}
           type="text" 
-          value={state.currentDocument.name || 'Untitled Document'}
+          value={state.currentDocument.name || ''}
           onChange={handleNameChange}
           className="document-name-input"
           placeholder="Untitled Document"
