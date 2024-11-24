@@ -1,0 +1,107 @@
+.zenmode-toolbar.quiet-mode {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 40px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.quiet-mode-toggle {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.quiet-mode-toggle:hover {
+  transform: scale(1.1);
+}
+
+body.quiet-mode {
+  overflow: hidden;
+}
+
+body.quiet-mode .ai-panel,
+body.quiet-mode .ai-panel-container,
+body.quiet-mode .menu-bar-container,
+body.quiet-mode .menu-bar,
+body.quiet-mode .sidebar,
+body.quiet-mode .status-bar {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+body.quiet-mode .text-editor-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  background: white;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+body.quiet-mode .editor-content-wrapper {
+  width: 800px;
+  max-width: 90vw;
+  margin: 0 auto;
+  padding: 60px 15px 100px;
+  box-sizing: border-box;
+}
+
+body.quiet-mode .editor-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+  background-color: var(--quiet-mode-background);
+  transition: background-color 0.3s ease;
+}
+
+body.quiet-mode .text-editor {
+  width: 100vw;
+  max-width: 100%;
+  background: transparent;
+  border: none;
+  resize: none;
+  outline: none;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--quiet-mode-text);
+  caret-color: var(--quiet-mode-caret);
+  padding: 0;
+}
+
+body.quiet-mode .zenmode-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  max-width: 90vw;
+  background: rgba(255, 255, 255, 0.9);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 10px 15px;
+  box-sizing: border-box;
+  z-index: 1001;
+  border-radius: 0;
+}
+
+body.quiet-mode body {
+  overflow-y: hidden;
+}

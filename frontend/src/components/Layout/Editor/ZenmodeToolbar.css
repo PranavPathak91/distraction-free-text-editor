@@ -1,0 +1,164 @@
+:root {
+  /* Align with MenuBar color palette */
+  --zenmode-background: var(--color-neutral-100);
+  --zenmode-text-primary: var(--color-neutral-700);
+  --zenmode-text-secondary: var(--color-neutral-500);
+  --zenmode-border: var(--color-neutral-300);
+  --zenmode-accent: var(--color-primary);
+  --zenmode-hover: var(--color-neutral-200);
+}
+
+.zenmode-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 15px;
+  background-color: var(--zenmode-background);
+  color: var(--zenmode-text-primary);
+  border-bottom: 1px solid var(--zenmode-border);
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: var(--shadow-xs);
+}
+
+.toolbar-left, 
+.toolbar-center,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.toolbar-left {
+  justify-self: flex-start;
+}
+
+.toolbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.toolbar-right {
+  justify-self: flex-end;
+  margin-left: auto;
+}
+
+.emoji-buttons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.emoji-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  padding: 5px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.emoji-button:hover {
+  background-color: var(--zenmode-hover);
+  transform: scale(1.1);
+}
+
+.text-style-buttons,
+.text-alignment-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.formatting-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.formatting-button:hover {
+  background-color: var(--zenmode-hover);
+}
+
+.formatting-button.active {
+  background-color: var(--zenmode-accent-light);
+  color: var(--zenmode-accent);
+}
+
+.formatting-button.active svg {
+  stroke: var(--zenmode-accent);
+  fill: var(--zenmode-accent);
+}
+
+.toolbar-stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8em;
+  color: var(--zenmode-text-secondary);
+}
+
+.stat-label {
+  opacity: 0.7;
+}
+
+.stat-value {
+  font-weight: bold;
+}
+
+.toolbar-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9em;
+  color: var(--zenmode-text-primary);
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.toolbar-button:hover {
+  background-color: var(--zenmode-hover);
+}
+
+.quiet-mode-toggle {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0;
+}
+
+.quiet-mode-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .zenmode-toolbar {
+    padding: 10px 16px;
+  }
+
+  .toolbar-center {
+    position: static;
+    transform: none;
+    flex-grow: 1;
+    justify-content: center;
+  }
+}

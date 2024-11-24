@@ -1,0 +1,568 @@
+/* Import Inter Font */
+@import url('https://rsms.me/inter/inter.css');
+
+/* Modern, Professional Color Palette & Design Tokens */
+:root {
+  /* Color Palette */
+  --color-background: #FFFFFF;
+  --color-background-secondary: #F7F7FB;
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #4B4B6A;
+  --color-text-tertiary: #8C8CA1;
+  
+  /* Accent Colors */
+  --color-accent-primary: #6A5ACD;     /* Soft Indigo */
+  --color-accent-secondary: #A78ADB;   /* Lavender */
+  --color-accent-hover: #5A4CAD;       /* Darker Indigo */
+  
+  /* Border & Divider Colors */
+  --color-border-light: #E6E6F0;
+  --color-border-medium: #D1D1E0;
+  
+  /* Shadow & Depth */
+  --color-shadow-light: rgba(0, 0, 0, 0.06);
+  --color-shadow-medium: rgba(0, 0, 0, 0.12);
+  
+  /* Typography */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  
+  /* Font Sizes */
+  --font-size-small: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;          /* 16px */
+  --font-size-large: 1.25rem;      /* 20px */
+  --font-size-xlarge: 1.5rem;      /* 24px */
+  --font-size-title: 2rem;         /* 32px */
+  
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+  
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+}
+
+/* Global Reset & Base Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: 
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.3s ease;
+}
+
+body {
+  font-family: var(--font-primary);
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Text Editor Container */
+.text-editor {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.text-editor-container {
+  flex-grow: 1;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 
+    0 10px 25px var(--color-shadow-light),
+    0 5px 10px var(--color-shadow-medium);
+  padding: var(--spacing-lg);
+  transition: box-shadow 0.3s ease;
+}
+
+.text-editor-container:hover {
+  box-shadow: 
+    0 15px 35px var(--color-shadow-light),
+    0 5px 15px var(--color-shadow-medium);
+}
+
+/* Document Name Input */
+.document-name-input {
+  width: 100%;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  border: none;
+  background-color: transparent;
+  padding: var(--spacing-sm) 0;
+  margin-bottom: var(--spacing-md);
+  transition: all 0.3s ease;
+}
+
+.document-name-input:hover,
+.document-name-input:focus {
+  outline: none;
+  background-color: var(--color-background-secondary);
+  transform: translateY(-2px);
+}
+
+.document-name-input::placeholder {
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+}
+
+/* Document Content Textarea */
+.document-content-textarea {
+  width: 100%;
+  min-height: 500px;
+  font-size: var(--font-size-large);
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  border: none;
+  background-color: transparent;
+  resize: none;
+  padding: 0;
+  transition: background-color 0.3s ease;
+}
+
+.document-content-textarea:focus {
+  outline: none;
+}
+
+.document-content-textarea::selection {
+  background-color: rgba(106, 90, 205, 0.2);
+}
+
+.document-content-textarea::placeholder {
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+}
+
+/* Hide Scrollbar */
+.document-content-textarea::-webkit-scrollbar {
+  display: none;
+}
+
+.document-content-textarea {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Buttons & Interactive Elements */
+.text-editor-header button {
+  background-color: var(--color-accent-primary);
+  color: white;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  transition: 
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.text-editor-header button:hover {
+  background-color: var(--color-accent-hover);
+  transform: translateY(-2px);
+}
+
+.text-editor-header button:disabled {
+  background-color: var(--color-text-tertiary);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Saved Documents List */
+.saved-documents-list {
+  background-color: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+}
+
+.saved-document-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border-light);
+  transition: background-color 0.3s ease;
+}
+
+.saved-document-item:hover {
+  background-color: rgba(106, 90, 205, 0.05);
+}
+
+.document-name {
+  font-size: var(--font-size-large);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+}
+
+/* Emoji and Action Styling */
+.emoji-picker {
+  display: inline-block;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+  margin-right: var(--spacing-xs);
+}
+
+.emoji-picker:hover {
+  opacity: 1;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-light);
+  cursor: pointer;
+  transition: 
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.action-button:hover {
+  background-color: var(--color-background);
+  box-shadow: 0 2px 4px var(--color-shadow-light);
+  transform: translateY(-2px);
+}
+
+.action-button:active {
+  transform: translateY(0);
+  box-shadow: none;
+  background-color: var(--color-border-light);
+}
+
+.action-button.primary {
+  background-color: var(--color-accent-primary);
+  color: white;
+  border-color: var(--color-accent-primary);
+}
+
+.action-button.primary:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.action-button-icon {
+  font-size: var(--font-size-base);
+  margin-right: var(--spacing-xs);
+}
+
+/* Inline Emoji Styling */
+.inline-emoji {
+  display: inline-block;
+  margin-right: var(--spacing-xs);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.inline-emoji:hover {
+  transform: scale(1.2);
+}
+
+/* Emoji Picker Dropdown */
+.emoji-picker-dropdown {
+  position: absolute;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-md);
+  box-shadow: 
+    0 4px 6px var(--color-shadow-light),
+    0 1px 3px var(--color-shadow-medium);
+  padding: var(--spacing-sm);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.emoji-grid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--font-size-large);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  transition: background-color 0.2s ease;
+}
+
+.emoji-grid-item:hover {
+  background-color: var(--color-background-secondary);
+}
+
+/* Document Emoji */
+.document-emoji {
+  font-size: var(--font-size-xlarge);
+  margin-right: var(--spacing-sm);
+  cursor: pointer;
+  transition: 
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.document-emoji:hover {
+  transform: scale(1.2);
+  opacity: 0.8;
+}
+
+/* Emoji Selection Placeholder */
+.emoji-placeholder {
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.emoji-placeholder:hover {
+  opacity: 1;
+}
+
+/* Responsive Emoji Sizing */
+@media (max-width: 768px) {
+  .document-emoji {
+    font-size: var(--font-size-large);
+  }
+
+  .emoji-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .text-editor {
+    padding: var(--spacing-sm);
+  }
+
+  .text-editor-container {
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+  }
+
+  .document-name-input {
+    font-size: var(--font-size-xlarge);
+  }
+
+  .document-content-textarea {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* Emoji Styling for MenuBar */
+.menu-item-emoji,
+.menu-item-child-emoji {
+  margin-right: var(--spacing-xs);
+  font-size: var(--font-size-base);
+  opacity: 0.8;
+  transition: 
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.menu-item-header .menu-item-emoji {
+  font-size: var(--font-size-large);
+}
+
+.menu-item-child:hover .menu-item-child-emoji {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+.menu-item-header:hover .menu-item-emoji {
+  transform: rotate(15deg);
+}
+
+/* Emoji Picker Styles */
+.emoji-picker {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.emoji-picker-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-md);
+  box-shadow: 
+    0 4px 6px var(--color-shadow-light),
+    0 1px 3px var(--color-shadow-medium);
+  padding: var(--spacing-sm);
+  z-index: 10;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.emoji-grid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--font-size-large);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  transition: 
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.emoji-grid-item:hover {
+  background-color: var(--color-background-secondary);
+  transform: scale(1.1);
+}
+
+/* MenuBar Width Adjustment */
+.menu-bar {
+  width: calc(var(--sidebar-width) * 1.2); /* 20% wider */
+  max-width: calc(var(--sidebar-width) * 1.2);
+}
+
+.menu-bar-header {
+  width: calc(var(--sidebar-width) * 1.2);
+  max-width: calc(var(--sidebar-width) * 1.2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.text-editor-container {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Emoji Icon Interactions */
+.project-icon-new-chapter,
+.project-name-edit-icon,
+.project-icon-dropdown {
+  display: inline-block;
+  cursor: pointer;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0;
+  transition: 
+    transform 0.2s ease,
+    opacity 0.2s ease;
+  user-select: none;
+}
+
+.project-icon-new-chapter {
+  font-size: calc(var(--font-size-base) * 1.2); /* Slightly larger */
+  opacity: 0.7;
+}
+
+.project-name-edit-icon {
+  font-size: calc(var(--font-size-base) * 1.2); /* Slightly larger */
+  opacity: 0.8;
+}
+
+.project-icon-dropdown {
+  font-size: calc(var(--font-size-base) * 1.2); /* Slightly larger */
+  opacity: 0.8;
+}
+
+.project-icon-new-chapter:hover,
+.project-name-edit-icon:hover,
+.project-icon-dropdown:hover {
+  transform: scale(1.2);
+  opacity: 1;
+  background: none; /* Explicitly remove any background */
+}
+
+.project-icon-new-chapter:active,
+.project-name-edit-icon:active,
+.project-icon-dropdown:active {
+  transform: scale(0.9);
+}
+
+/* Prevent default focus styles */
+.project-icon-new-chapter:focus,
+.project-name-edit-icon:focus,
+.project-icon-dropdown:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.project-icon-delete-chapter {
+  margin-left: 8px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: 
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.project-icon-delete-chapter:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+/* Menu Item Children */
+.menu-item-child {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+  min-width: 0; /* Allow flex items to shrink below their content size */
+}
+
+.menu-item-child-emoji {
+  flex-shrink: 0;
+}
+
+.menu-item-child-name {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0; /* Allows text to shrink */
+}
+
+.project-icon-delete-chapter {
+  flex-shrink: 0;
+}

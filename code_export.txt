@@ -1,0 +1,1685 @@
+===== PROJECT STRUCTURE =====
+text-editor-app Project Structure
+
+/text-editor-app
+├── README.md
+├── code_export.txt
+└── frontend
+    ├── node_modules
+    ├── package-lock.json
+    ├── package.json
+    ├── public
+    │   └── [contents not listed]
+    └── src
+        ├── App.css
+        ├── App.js
+        ├── assets
+        │   └── [contents not listed]
+        ├── components
+        │   └── [13 components, including:]
+        │       ├── MenuBar
+        │       │   ├── MenuBar.jsx
+        │       │   └── MenuBar.css
+        ├── context
+        │   └── TextEditorContext.jsx
+        ├── index.css
+        ├── index.js
+        ├── pages
+        │   └── [contents not listed]
+        ├── reportWebVitals.js
+        ├── services
+        │   ├── documentService.js
+        │   └── [another service]
+        ├── styles
+        │   └── TextEditor.css
+        └── utils
+            └── [2 utility files]
+
+Key Directories:
+- components: Reusable React components
+- context: State management using React Context
+- services: API and data management services
+- styles: Global and component-specific styling
+- utils: Utility functions and helpers
+
+Main Application Structure:
+- React-based single-page application
+- Modular component design
+- Context-based state management
+- Distraction-free writing environment
+
+===== README.md =====
+
+===== CONTEXT/TextEditorContext.jsx =====
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import DocumentService from '../services/documentService';
+
+// Initial state
+const initialState = {
+  projects: [],
+  currentProject: null,
+  currentDocument: null,
+  documents: [],
+  isLoading: true
+};
+
+// Action types
+const ActionTypes = {
+  LOAD_PROJECTS: 'LOAD_PROJECTS',
+  CREATE_PROJECT: 'CREATE_PROJECT',
+  SELECT_PROJECT: 'SELECT_PROJECT',
+  CREATE_DOCUMENT: 'CREATE_DOCUMENT',
+  UPDATE_DOCUMENT: 'UPDATE_DOCUMENT',
+  SELECT_DOCUMENT: 'SELECT_DOCUMENT',
+  DELETE_DOCUMENT: 'DELETE_DOCUMENT',
+  UPDATE_PROJECT: 'UPDATE_PROJECT'
+};
+
+// Reducer
+function textEditorReducer(state, action) {
+  switch (action.type) {
+    case ActionTypes.LOAD_PROJECTS:
+      return {
+        ...state,
+        projects: action.payload,
+        isLoading: false,
+        currentProject: action.payload[0] || null
+      };
+
+    case ActionTypes.CREATE_PROJECT:
+      return {
+        ...state,
+        projects: [...state.projects, action.payload],
+        currentProject: action.payload
+      };
+
+    case ActionTypes.SELECT_PROJECT:
+      return {
+        ...state,
+        currentProject: action.payload,
+        documents: action.payload.documents || [],
+        currentDocument: null
+      };
+
+    case ActionTypes.CREATE_DOCUMENT:
+      if (!state.currentProject) return state;
+      
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          documents: [
+            ...(state.currentProject.documents || []),
+            action.payload
+          ]
+        },
+        documents: [
+          ...(state.documents || []),
+          action.payload
+        ],
+        currentDocument: action.payload
+      };
+
+    case ActionTypes.UPDATE_DOCUMENT:
+      return {
+        ...state,
+        currentDocument: action.payload,
+        documents: state.documents.map(doc => 
+          doc.id === action.payload.id ? action.payload : doc
+        )
+      };
+
+    case ActionTypes.SELECT_DOCUMENT:
+      return {
+        ...state,
+        currentDocument: action.payload
+      };
+
+    case ActionTypes.DELETE_DOCUMENT:
+      return {
+        ...state,
+        documents: state.documents.filter(doc => doc.id !== action.payload),
+        currentDocument: null
+      };
+
+    case ActionTypes.UPDATE_PROJECT:
+      return {
+        ...state,
+        currentProject: action.payload,
+        projects: state.projects.map(project => 
+          project.id === action.payload.id ? action.payload : project
+        )
+      };
+
+    default:
+      return state;
+  }
+}
+
+// Emoji Utility
+const DEFAULT_EMOJIS = {
+  project: ['🚀', '📚', '🌈', '💡', '🎨', '🌟', '📝', '🔮'],
+  document: ['📄', '✍️', '📖', '🗒️', '📓', '📘', '🔖', '📋']
+};
+
+function getRandomEmoji(type = 'document') {
+  const emojis = DEFAULT_EMOJIS[type];
+  return emojis[Math.floor(Math.random() * emojis.length)];
+}
+
+// Create context
+const TextEditorContext = createContext();
+
+// Provider component
+export function TextEditorProvider({ children }) {
+  const [state, dispatch] = useReducer(textEditorReducer, initialState);
+
+  // Load projects on initial render
+  useEffect(() => {
+    const projects = DocumentService.listProjects();
+    
+    if (projects.length > 0) {
+      dispatch({ 
+        type: ActionTypes.LOAD_PROJECTS, 
+        payload: projects 
+      });
+      
+      // If a project is loaded, ensure it has a default document/chapter
+      const firstProject = projects[0];
+      if (!firstProject.documents || firstProject.documents.length === 0) {
+        const defaultChapter = DocumentService.createDocument(
+          firstProject.id, 
+          'Chapter 1'
+        );
+        
+        // Reload projects to reflect the new document
+        const updatedProjects = DocumentService.listProjects();
+        dispatch({ 
+          type: ActionTypes.LOAD_PROJECTS, 
+          payload: updatedProjects 
+        });
+      }
+    } else {
+      // Create initial project with a default chapter
+      const initialProject = DocumentService.createProject('New Project');
+      const defaultChapter = DocumentService.createDocument(
+        initialProject.id, 
+        'Chapter 1'
+      );
+      
+      dispatch({ 
+        type: ActionTypes.CREATE_PROJECT, 
+        payload: initialProject 
+      });
+    }
+  }, []);
+
+  // Action creators
+  const createProject = (projectName) => {
+    const newProject = DocumentService.createProject(projectName);
+    dispatch({ 
+      type: ActionTypes.CREATE_PROJECT, 
+      payload: newProject 
+    });
+    return newProject;
+  };
+
+  const selectProject = (project) => {
+    dispatch({ 
+      type: ActionTypes.SELECT_PROJECT, 
+      payload: project 
+    });
+  };
+
+  const createDocument = (documentName) => {
+    if (!state.currentProject) {
+      console.error('No project selected');
+      return null;
+    }
+
+    // If no document name provided, use 'Chapter'
+    const finalDocumentName = documentName || 'Chapter';
+
+    const newDocument = DocumentService.createDocument(
+      state.currentProject.id, 
+      finalDocumentName
+    );
+
+    dispatch({ 
+      type: ActionTypes.CREATE_DOCUMENT, 
+      payload: newDocument 
+    });
+
+    // Automatically select the newly created document
+    dispatch({
+      type: ActionTypes.SELECT_DOCUMENT,
+      payload: newDocument
+    });
+
+    return newDocument;
+  };
+
+  const updateDocument = (documentUpdates) => {
+    if (!state.currentProject || !state.currentDocument) {
+      console.error('No project or document selected');
+      return;
+    }
+
+    const updatedDocument = DocumentService.updateDocument(
+      state.currentProject.id, 
+      state.currentDocument.id, 
+      documentUpdates
+    );
+
+    dispatch({ 
+      type: ActionTypes.UPDATE_DOCUMENT, 
+      payload: updatedDocument 
+    });
+  };
+
+  const selectDocument = (document) => {
+    dispatch({ 
+      type: ActionTypes.SELECT_DOCUMENT, 
+      payload: document 
+    });
+  };
+
+  const deleteDocument = (documentToDelete) => {
+    if (!state.currentProject) {
+      console.error('No project selected');
+      return;
+    }
+
+    // Delete the document from the project
+    DocumentService.deleteDocument(state.currentProject.id, documentToDelete.id);
+
+    // Get the updated project
+    const updatedProjects = DocumentService.listProjects();
+    const updatedProject = updatedProjects.find(p => p.id === state.currentProject.id);
+
+    // Determine the new current document
+    const newCurrentDocument = updatedProject.documents.length > 0 
+      ? updatedProject.documents[0] 
+      : null;
+
+    // Dispatch actions to update state
+    dispatch({ 
+      type: ActionTypes.LOAD_PROJECTS, 
+      payload: updatedProjects 
+    });
+
+    if (newCurrentDocument) {
+      dispatch({ 
+        type: ActionTypes.SELECT_DOCUMENT, 
+        payload: newCurrentDocument 
+      });
+    }
+  };
+
+  const updateProject = (projectUpdates) => {
+    if (!state.currentProject) {
+      console.error('No project selected');
+      return;
+    }
+
+    const updatedProject = DocumentService.updateProject(
+      state.currentProject.id, 
+      projectUpdates
+    );
+
+    dispatch({ 
+      type: ActionTypes.UPDATE_PROJECT, 
+      payload: updatedProject 
+    });
+
+    return updatedProject;
+  };
+
+  // Context value
+  const contextValue = {
+    state,
+    createProject,
+    selectProject,
+    updateProject,
+    createDocument,
+    updateDocument,
+    selectDocument,
+    deleteDocument
+  };
+
+  return (
+    <TextEditorContext.Provider value={contextValue}>
+      {children}
+    </TextEditorContext.Provider>
+  );
+}
+
+// Custom hook
+export function useTextEditor() {
+  const context = useContext(TextEditorContext);
+  if (!context) {
+    throw new Error('useTextEditor must be used within a TextEditorProvider');
+  }
+  return context;
+}
+
+===== PAGES/TextEditor.jsx =====
+import React, { useEffect, useRef } from 'react';
+import { useTextEditor } from '../context/TextEditorContext';
+import '../styles/TextEditor.css';
+
+function TextEditor() {
+  const { 
+    state, 
+    updateDocument,
+    createDocument
+  } = useTextEditor();
+
+  const nameInputRef = useRef(null);
+  const contentTextareaRef = useRef(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const adjustHeight = (element) => {
+      if (element) {
+        element.style.height = 'auto';
+        element.style.height = `${element.scrollHeight}px`;
+      }
+    };
+
+    if (contentTextareaRef.current) {
+      adjustHeight(contentTextareaRef.current);
+    }
+  }, [state.currentDocument?.content]);
+
+  // Create initial document if no document exists
+  useEffect(() => {
+    if (!state.currentDocument && state.currentProject) {
+      createDocument('Untitled Document');
+    }
+  }, [state.currentProject]);
+
+  if (!state.currentProject) {
+    return <div className="text-editor-loading">Loading project...</div>;
+  }
+
+  if (!state.currentDocument) {
+    return <div className="text-editor-loading">Create a new document</div>;
+  }
+
+  const handleContentChange = (e) => {
+    updateDocument({ content: e.target.value });
+  };
+
+  const handleNameChange = (e) => {
+    updateDocument({ name: e.target.value || 'Untitled Document' });
+  };
+
+  return (
+    <div className="text-editor">
+      <div className="text-editor-header">
+        <input 
+          ref={nameInputRef}
+          type="text" 
+          value={state.currentDocument.name || 'Untitled Document'}
+          onChange={handleNameChange}
+          className="document-name-input"
+          placeholder="Untitled Document"
+        />
+      </div>
+      <div className="text-editor-body">
+        <textarea 
+          ref={contentTextareaRef}
+          value={state.currentDocument.content || ''}
+          onChange={handleContentChange}
+          className="document-content-textarea"
+          placeholder="Start typing your document..."
+          autoFocus
+        />
+      </div>
+    </div>
+  );
+}
+
+export default TextEditor;
+===== SERVICES/documentService.js =====
+import { v4 as uuidv4 } from 'uuid';
+
+class DocumentService {
+  static STORAGE_KEY = 'text-editor-projects-v2';
+
+  // Generate a unique ID
+  static generateId() {
+    return uuidv4();
+  }
+
+  // Save entire project structure
+  static saveProjects(projects) {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(projects));
+    } catch (error) {
+      console.error('Error saving projects:', error);
+    }
+  }
+
+  // Retrieve entire project structure
+  static getProjects() {
+    try {
+      const projectsJson = localStorage.getItem(this.STORAGE_KEY);
+      return projectsJson ? JSON.parse(projectsJson) : [];
+    } catch (error) {
+      console.error('Error retrieving projects:', error);
+      return [];
+    }
+  }
+
+  // Create a new project
+  static createProject(projectName = 'New Project') {
+    const newProject = {
+      id: this.generateId(),
+      name: projectName,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      documents: []
+    };
+
+    const projects = this.getProjects();
+    projects.push(newProject);
+    this.saveProjects(projects);
+
+    return newProject;
+  }
+
+  // Create a new document within a project
+  static createDocument(projectId, documentName = 'Chapter') {
+    const projects = this.getProjects();
+    const projectIndex = projects.findIndex(p => p.id === projectId);
+
+    if (projectIndex === -1) {
+      throw new Error('Project not found');
+    }
+
+    // Determine the chapter number
+    const existingDocuments = projects[projectIndex].documents || [];
+    const chapterNumber = existingDocuments.length + 1;
+    const finalDocumentName = `${documentName} ${chapterNumber}`;
+
+    const newDocument = {
+      id: this.generateId(),
+      name: finalDocumentName,
+      content: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // Add document to the project
+    if (!projects[projectIndex].documents) {
+      projects[projectIndex].documents = [];
+    }
+    projects[projectIndex].documents.push(newDocument);
+    projects[projectIndex].updatedAt = new Date().toISOString();
+    
+    this.saveProjects(projects);
+
+    return newDocument;
+  }
+
+  // Update a document
+  static updateDocument(projectId, documentId, updates) {
+    const projects = this.getProjects();
+    const projectIndex = projects.findIndex(p => p.id === projectId);
+
+    if (projectIndex === -1) {
+      throw new Error('Project not found');
+    }
+
+    const documentIndex = projects[projectIndex].documents
+      .findIndex(d => d.id === documentId);
+
+    if (documentIndex === -1) {
+      throw new Error('Document not found');
+    }
+
+    // Update document
+    projects[projectIndex].documents[documentIndex] = {
+      ...projects[projectIndex].documents[documentIndex],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+
+    // Update project timestamp
+    projects[projectIndex].updatedAt = new Date().toISOString();
+
+    this.saveProjects(projects);
+
+    return projects[projectIndex].documents[documentIndex];
+  }
+
+  // Delete a document
+  static deleteDocument(projectId, documentId) {
+    const projects = this.getProjects();
+    const projectIndex = projects.findIndex(p => p.id === projectId);
+
+    if (projectIndex === -1) {
+      throw new Error('Project not found');
+    }
+
+    // Remove document from project
+    projects[projectIndex].documents = projects[projectIndex].documents
+      .filter(d => d.id !== documentId);
+
+    // Update project timestamp
+    projects[projectIndex].updatedAt = new Date().toISOString();
+
+    this.saveProjects(projects);
+  }
+
+  // List all projects
+  static listProjects() {
+    return this.getProjects();
+  }
+
+  // List documents in a project
+  static listDocuments(projectId) {
+    const projects = this.getProjects();
+    const project = projects.find(p => p.id === projectId);
+    return project ? project.documents : [];
+  }
+
+  // Get a specific document
+  static getDocument(projectId, documentId) {
+    const projects = this.getProjects();
+    const project = projects.find(p => p.id === projectId);
+    
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    const document = project.documents.find(d => d.id === documentId);
+    
+    if (!document) {
+      throw new Error('Document not found');
+    }
+
+    return document;
+  }
+
+  // Update a project
+  static updateProject(projectId, updates) {
+    const projects = this.getProjects();
+    const projectIndex = projects.findIndex(p => p.id === projectId);
+
+    if (projectIndex === -1) {
+      throw new Error('Project not found');
+    }
+
+    // Update project
+    projects[projectIndex] = {
+      ...projects[projectIndex],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+
+    this.saveProjects(projects);
+
+    return projects[projectIndex];
+  }
+}
+
+export default DocumentService;
+
+===== COMPONENTS/MenuBar/MenuBar.jsx =====
+import React, { useState, useRef, useEffect } from 'react';
+import { useTextEditor } from '../../context/TextEditorContext';
+import './MenuBar.css';
+
+const MENU_STRUCTURE = [
+  {
+    type: 'project',
+    name: 'Chapters',
+    children: []
+  },
+  { 
+    name: 'Characters', 
+    type: 'section' 
+  },
+  { 
+    name: 'World Building', 
+    type: 'section' 
+  },
+  { 
+    name: 'Notes', 
+    type: 'section' 
+  },
+  { 
+    name: 'Timeline', 
+    type: 'section' 
+  }
+];
+
+function MenuBar() {
+  const { 
+    state, 
+    createProject,
+    selectProject,
+    updateProject,
+    createDocument,
+    selectDocument,
+    deleteDocument
+  } = useTextEditor();
+
+  const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
+  const [expandedSections, setExpandedSections] = useState(() => {
+    // Initialize with Chapters expanded by default
+    return {
+      'Chapters': true
+    };
+  });
+  const [isEditingProjectName, setIsEditingProjectName] = useState(false);
+  const [editedProjectName, setEditedProjectName] = useState('');
+  const projectNameInputRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProjectDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isEditingProjectName && projectNameInputRef.current) {
+      projectNameInputRef.current.focus();
+      projectNameInputRef.current.select();
+    }
+  }, [isEditingProjectName]);
+
+  const toggleSection = (sectionName) => {
+    console.log('Toggling section:', sectionName);
+    setExpandedSections(prev => {
+      const newState = {
+        ...prev,
+        [sectionName]: !prev[sectionName]
+      };
+      console.log('New expanded sections state:', newState);
+      return newState;
+    });
+  };
+
+  const handleProjectNameEdit = () => {
+    if (!state.currentProject) return;
+    
+    setIsEditingProjectName(true);
+    setEditedProjectName(state.currentProject.name);
+  };
+
+  const handleProjectNameChange = (e) => {
+    // Directly update the edited project name
+    setEditedProjectName(e.target.value);
+  };
+
+  const handleProjectNameSubmit = () => {
+    if (!state.currentProject) return;
+
+    // Trim the project name and prevent empty names
+    const trimmedName = editedProjectName.trim();
+    if (trimmedName) {
+      updateProject({
+        name: trimmedName
+      });
+    } else {
+      // If name is empty, revert to the original name
+      setEditedProjectName(state.currentProject.name);
+    }
+    
+    setIsEditingProjectName(false);
+  };
+
+  const handleProjectNameKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleProjectNameSubmit();
+    } else if (e.key === 'Escape') {
+      setIsEditingProjectName(false);
+    }
+  };
+
+  const handleCreateChapter = () => {
+    if (!state.currentProject) {
+      console.error('No project selected');
+      return;
+    }
+
+    const newChapter = createDocument(); // Use default 'Chapter' naming
+
+    if (newChapter) {
+      console.log('New chapter created:', newChapter);
+      
+      // Ensure the Chapters section is expanded
+      setExpandedSections(prev => ({
+        ...prev,
+        'Chapters': true
+      }));
+    }
+  };
+
+  const renderMenuItems = () => {
+    return MENU_STRUCTURE.map((item, index) => {
+      let chapterChildren = [];
+      
+      if (item.name === 'Chapters' && state.currentProject) {
+        chapterChildren = (state.currentProject.documents || []).map(doc => ({
+          name: doc.name,
+          emoji: doc.emoji || '📄',  // Default emoji if not set
+          type: 'chapter',
+          id: doc.id
+        }));
+      }
+
+      return (
+        <div 
+          key={index} 
+          className={`menu-item ${item.type === 'project' ? 'menu-item-project' : 'menu-item-section'}`}
+        >
+          <div className="menu-item-header">
+            {/* Add project/section emoji */}
+            {state.currentProject && item.name === 'Chapters' && (
+              <span className="menu-item-emoji">
+                {state.currentProject.emoji || '📚'}
+              </span>
+            )}
+            
+            <span className="menu-item-name">{item.name}</span>
+            
+            {item.name === 'Chapters' && state.currentProject && (
+              <div 
+                className="project-icon project-icon-new-chapter"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCreateChapter();
+                }}
+              >
+                ➕
+              </div>
+            )}
+          </div>
+          
+          {chapterChildren.length > 0 && (
+            <div className="menu-item-children">
+              {chapterChildren.map((child) => (
+                <div 
+                  key={child.id} 
+                  className="menu-item-child"
+                  onClick={() => {
+                    const fullDocument = state.currentProject.documents.find(
+                      doc => doc.id === child.id
+                    );
+                    if (fullDocument) {
+                      selectDocument(fullDocument);
+                    }
+                  }}
+                >
+                  <span className="menu-item-child-emoji">{child.emoji || '📄'}</span>
+                  <span className="menu-item-child-name">{child.name}</span>
+                  <div 
+                    className="project-icon project-icon-delete-chapter"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent parent click
+                      const fullDocument = state.currentProject.documents.find(
+                        doc => doc.id === child.id
+                      );
+                      if (fullDocument) {
+                        deleteDocument(fullDocument);
+                      }
+                    }}
+                  >
+                    🗑️
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
+
+  return (
+    <div className="menu-bar">
+      <div className="menu-bar-header" ref={dropdownRef}>
+        <div className="project-selector">
+          <div 
+            className="project-name"
+            onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
+          >
+            {isEditingProjectName ? (
+              <input 
+                ref={projectNameInputRef}
+                className="project-name-edit-input"
+                value={editedProjectName}
+                onChange={handleProjectNameChange}
+                onBlur={handleProjectNameSubmit}
+                onKeyDown={handleProjectNameKeyDown}
+                autoFocus
+                placeholder="Enter project name"
+              />
+            ) : (
+              <span 
+                className="project-name-display"
+                onDoubleClick={handleProjectNameEdit}
+              >
+                {state.currentProject?.name || 'Select a Project'}
+                <span 
+                  className="project-name-edit-icon"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent parent click events
+                    handleProjectNameEdit();
+                  }}
+                >✏️</span>
+              </span>
+            )}
+          </div>
+          {state.currentProject && (
+            <div className="project-icons">
+              <div 
+                className="project-icon-dropdown"
+                onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
+              >
+                🔽
+              </div>
+            </div>
+          )}
+        </div>
+        {isProjectDropdownOpen && (
+          <div className="project-name-dropdown">
+            {state.projects.map((project) => (
+              <div 
+                key={project.id} 
+                className="project-name-dropdown-item"
+                onClick={() => {
+                  selectProject(project);
+                  setIsProjectDropdownOpen(false);
+                }}
+              >
+                {project.emoji || '📁'} {project.name}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="menu-items">
+        {renderMenuItems()}
+      </div>
+    </div>
+  );
+}
+
+export default MenuBar;
+
+===== STYLES/TextEditor.css =====
+/* Import Inter Font */
+@import url('https://rsms.me/inter/inter.css');
+
+/* Modern, Professional Color Palette & Design Tokens */
+:root {
+  /* Color Palette */
+  --color-background: #FFFFFF;
+  --color-background-secondary: #F7F7FB;
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #4B4B6A;
+  --color-text-tertiary: #8C8CA1;
+  
+  /* Accent Colors */
+  --color-accent-primary: #6A5ACD;     /* Soft Indigo */
+  --color-accent-secondary: #A78ADB;   /* Lavender */
+  --color-accent-hover: #5A4CAD;       /* Darker Indigo */
+  
+  /* Border & Divider Colors */
+  --color-border-light: #E6E6F0;
+  --color-border-medium: #D1D1E0;
+  
+  /* Shadow & Depth */
+  --color-shadow-light: rgba(0, 0, 0, 0.06);
+  --color-shadow-medium: rgba(0, 0, 0, 0.12);
+  
+  /* Typography */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  
+  /* Font Sizes */
+  --font-size-small: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;          /* 16px */
+  --font-size-large: 1.25rem;      /* 20px */
+  --font-size-xlarge: 1.5rem;      /* 24px */
+  --font-size-title: 2rem;         /* 32px */
+  
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+  
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+}
+
+/* Global Reset & Base Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: 
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.3s ease;
+}
+
+body {
+  font-family: var(--font-primary);
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Text Editor Container */
+.text-editor {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.text-editor-container {
+  flex-grow: 1;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 
+    0 10px 25px var(--color-shadow-light),
+    0 5px 10px var(--color-shadow-medium);
+  padding: var(--spacing-lg);
+  transition: box-shadow 0.3s ease;
+}
+
+.text-editor-container:hover {
+  box-shadow: 
+    0 15px 35px var(--color-shadow-light),
+    0 5px 15px var(--color-shadow-medium);
+}
+
+/* Document Name Input */
+.document-name-input {
+  width: 100%;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  border: none;
+  background-color: transparent;
+  padding: var(--spacing-sm) 0;
+  margin-bottom: var(--spacing-md);
+  transition: all 0.3s ease;
+}
+
+.document-name-input:hover,
+.document-name-input:focus {
+  outline: none;
+  background-color: var(--color-background-secondary);
+  transform: translateY(-2px);
+}
+
+.document-name-input::placeholder {
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+}
+
+/* Document Content Textarea */
+.document-content-textarea {
+  width: 100%;
+  min-height: 500px;
+  font-size: var(--font-size-large);
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  border: none;
+  background-color: transparent;
+  resize: none;
+  padding: 0;
+  transition: background-color 0.3s ease;
+}
+
+.document-content-textarea:focus {
+  outline: none;
+}
+
+.document-content-textarea::selection {
+  background-color: rgba(106, 90, 205, 0.2);
+}
+
+.document-content-textarea::placeholder {
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+}
+
+/* Hide Scrollbar */
+.document-content-textarea::-webkit-scrollbar {
+  display: none;
+}
+
+.document-content-textarea {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Buttons & Interactive Elements */
+.text-editor-header button {
+  background-color: var(--color-accent-primary);
+  color: white;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  transition: 
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.text-editor-header button:hover {
+  background-color: var(--color-accent-hover);
+  transform: translateY(-2px);
+}
+
+.text-editor-header button:disabled {
+  background-color: var(--color-text-tertiary);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Saved Documents List */
+.saved-documents-list {
+  background-color: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+}
+
+.saved-document-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border-light);
+  transition: background-color 0.3s ease;
+}
+
+.saved-document-item:hover {
+  background-color: rgba(106, 90, 205, 0.05);
+}
+
+.document-name {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Emoji and Action Styling */
+.emoji-picker {
+  display: inline-block;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+  margin-right: var(--spacing-xs);
+}
+
+.emoji-picker:hover {
+  opacity: 1;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-light);
+  cursor: pointer;
+  transition: 
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.action-button:hover {
+  background-color: var(--color-background);
+  box-shadow: 0 2px 4px var(--color-shadow-light);
+  transform: translateY(-2px);
+}
+
+.action-button:active {
+  transform: translateY(0);
+  box-shadow: none;
+  background-color: var(--color-border-light);
+}
+
+.action-button.primary {
+  background-color: var(--color-accent-primary);
+  color: white;
+  border-color: var(--color-accent-primary);
+}
+
+.action-button.primary:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.action-button-icon {
+  font-size: var(--font-size-base);
+  margin-right: var(--spacing-xs);
+}
+
+/* Inline Emoji Styling */
+.inline-emoji {
+  display: inline-block;
+  margin-right: var(--spacing-xs);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.inline-emoji:hover {
+  transform: scale(1.2);
+}
+
+/* Emoji Picker Dropdown */
+.emoji-picker-dropdown {
+  position: absolute;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-md);
+  box-shadow: 
+    0 4px 6px var(--color-shadow-light),
+    0 1px 3px var(--color-shadow-medium);
+  padding: var(--spacing-sm);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.emoji-grid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--font-size-large);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  transition: background-color 0.2s ease;
+}
+
+.emoji-grid-item:hover {
+  background-color: var(--color-background-secondary);
+}
+
+/* Document Emoji */
+.document-emoji {
+  font-size: var(--font-size-xlarge);
+  margin-right: var(--spacing-sm);
+  cursor: pointer;
+  transition: 
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.document-emoji:hover {
+  transform: scale(1.2);
+  opacity: 0.8;
+}
+
+/* Emoji Selection Placeholder */
+.emoji-placeholder {
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.emoji-placeholder:hover {
+  opacity: 1;
+}
+
+/* Responsive Emoji Sizing */
+@media (max-width: 768px) {
+  .document-emoji {
+    font-size: var(--font-size-large);
+  }
+
+  .emoji-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .text-editor {
+    padding: var(--spacing-sm);
+  }
+
+  .text-editor-container {
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+  }
+
+  .document-name-input {
+    font-size: var(--font-size-xlarge);
+  }
+
+  .document-content-textarea {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* Emoji Styling for MenuBar */
+.menu-item-emoji,
+.menu-item-child-emoji {
+  margin-right: var(--spacing-xs);
+  font-size: var(--font-size-base);
+  opacity: 0.8;
+  transition: 
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.menu-item-header .menu-item-emoji {
+  font-size: var(--font-size-large);
+}
+
+.menu-item-child:hover .menu-item-child-emoji {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+.menu-item-header:hover .menu-item-emoji {
+  transform: rotate(15deg);
+}
+
+/* Emoji Picker Styles */
+.emoji-picker {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.emoji-picker-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-md);
+  box-shadow: 
+    0 4px 6px var(--color-shadow-light),
+    0 1px 3px var(--color-shadow-medium);
+  padding: var(--spacing-sm);
+  z-index: 10;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.emoji-grid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--font-size-large);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  transition: 
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.emoji-grid-item:hover {
+  background-color: var(--color-background-secondary);
+  transform: scale(1.1);
+}
+
+/* MenuBar Width Adjustment */
+.menu-bar {
+  width: calc(var(--sidebar-width) * 1.2); /* 20% wider */
+  max-width: calc(var(--sidebar-width) * 1.2);
+}
+
+.menu-bar-header {
+  width: calc(var(--sidebar-width) * 1.2);
+  max-width: calc(var(--sidebar-width) * 1.2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.text-editor-container {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Emoji Icon Interactions */
+.project-icon-new-chapter,
+.project-name-edit-icon,
+.project-icon-dropdown {
+  display: inline-block;
+  cursor: pointer;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0;
+  transition: 
+    transform 0.2s ease,
+    opacity 0.2s ease;
+  user-select: none;
+}
+
+.project-icon-new-chapter {
+  font-size: calc(var(--font-size-base) * 1.2); /* Slightly larger */
+  opacity: 0.7;
+}
+
+.project-name-edit-icon {
+  font-size: calc(var(--font-size-base) * 1.2); /* Slightly larger */
+  opacity: 0.8;
+}
+
+.project-icon-dropdown {
+  font-size: calc(var(--font-size-base) * 1.2); /* Slightly larger */
+  opacity: 0.8;
+}
+
+.project-icon-new-chapter:hover,
+.project-name-edit-icon:hover,
+.project-icon-dropdown:hover {
+  transform: scale(1.2);
+  opacity: 1;
+  background: none; /* Explicitly remove any background */
+}
+
+.project-icon-new-chapter:active,
+.project-name-edit-icon:active,
+.project-icon-dropdown:active {
+  transform: scale(0.9);
+}
+
+/* Prevent default focus styles */
+.project-icon-new-chapter:focus,
+.project-name-edit-icon:focus,
+.project-icon-dropdown:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.project-icon-delete-chapter {
+  margin-left: 8px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: 
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.project-icon-delete-chapter:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+/* Menu Item Children */
+.menu-item-child {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+  min-width: 0; /* Allow flex items to shrink below their content size */
+}
+
+.menu-item-child-emoji {
+  flex-shrink: 0;
+}
+
+.menu-item-child-name {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0; /* Allows text to shrink */
+}
+
+.project-icon-delete-chapter {
+  flex-shrink: 0;
+}
+
+===== CODE EXPORT DOCUMENT =====
+
+# Distraction-Free Writing Application - Code Export
+
+## 🏗️ Project Structure
+
+```
+text-editor-app/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   └── MenuBar/
+│   │   │       ├── MenuBar.jsx
+│   │   │       └── MenuBar.css
+│   │   ├── context/
+│   │   │   └── TextEditorContext.jsx
+│   │   ├── services/
+│   │   │   └── documentService.js
+│   │   ├── styles/
+│   │   │   └── TextEditor.css
+│   │   └── App.js
+│   └── package.json
+└── README.md
+```
+
+## 📦 Key Components and Services
+
+### 1. Context Management (TextEditorContext.jsx)
+```javascript
+// State Structure
+const initialState = {
+  projects: [],
+  currentProject: null,
+  currentDocument: null,
+  documents: [],
+  isLoading: true
+};
+
+// Action Types
+const ActionTypes = {
+  LOAD_PROJECTS: 'LOAD_PROJECTS',
+  CREATE_PROJECT: 'CREATE_PROJECT',
+  SELECT_PROJECT: 'SELECT_PROJECT',
+  CREATE_DOCUMENT: 'CREATE_DOCUMENT',
+  UPDATE_DOCUMENT: 'UPDATE_DOCUMENT',
+  SELECT_DOCUMENT: 'SELECT_DOCUMENT',
+  DELETE_DOCUMENT: 'DELETE_DOCUMENT',
+  UPDATE_PROJECT: 'UPDATE_PROJECT'
+};
+
+// Emoji Management
+const DEFAULT_EMOJIS = {
+  project: ['🚀', '📚', '🌈', '💡', '🎨', '🌟', '📝', '🔮'],
+  document: ['📄', '✍️', '📖', '🗒️', '📓', '📘', '🔖', '📋']
+};
+
+function getRandomEmoji(type = 'document') {
+  const emojis = DEFAULT_EMOJIS[type];
+  return emojis[Math.floor(Math.random() * emojis.length)];
+}
+```
+
+### 2. Document Service (documentService.js)
+```javascript
+class DocumentService {
+  static STORAGE_KEY = 'text-editor-projects-v2';
+
+  // Unique ID Generation
+  static generateId() {
+    return uuidv4();
+  }
+
+  // Project Management Methods
+  static createProject(projectName = 'New Project') {
+    const newProject = {
+      id: this.generateId(),
+      name: projectName,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      documents: []
+    };
+    // Saving and retrieval logic
+    return newProject;
+  }
+
+  // Document Creation Method
+  static createDocument(projectId, documentName = 'Chapter') {
+    const newDocument = {
+      id: this.generateId(),
+      name: `${documentName} ${existingDocuments.length + 1}`,
+      content: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    // Document addition and project update logic
+    return newDocument;
+  }
+}
+```
+
+### 3. Styling Approach (TextEditor.css)
+```css
+:root {
+  /* Neutral Color Palette */
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  
+  /* Typography */
+  --font-size-sm: 0.7rem;
+  --font-size-base: 0.85rem;
+  
+  /* Layout */
+  --menu-width: 300px;
+}
+
+.menu-bar {
+  width: var(--menu-width);
+  display: flex;
+  line-height: 1;
+}
+
+.document-name {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+```
+
+## 🔑 Key Design Principles
+
+1. **Modular Architecture**: Separate concerns between state management, data services, and UI components
+2. **Local Storage Persistence**: Complete project state saved client-side
+3. **Emoji-Enhanced UI**: Random emoji assignment for visual differentiation
+4. **Minimal State Management**: Reducer-based updates with comprehensive action handling
+
+## 🚧 Current Limitations & Improvements
+
+- Enhanced error handling
+- More robust input validation
+- Performance optimization for large projects
+- Comprehensive unit testing
+
+## 📊 State Management Flow
+
+1. User creates a project
+2. Project gets a unique ID and random emoji
+3. Documents can be added to the project
+4. Each document tracks its own metadata
+5. State updates trigger re-renders and local storage saves
+
+## 🛡️ Security Considerations
+
+- No sensitive data stored
+- Client-side only storage
+- UUID for unique identifiers
+- Minimal external dependencies
+
+## 🔗 Core Dependencies
+
+- React
+- React Hooks
+- UUID
+- Local Storage API
+
+## 📝 Future Roadmap
+
+1. Cloud synchronization
+2. Advanced formatting options
+3. Export/Import functionality
+4. Collaborative editing features
+
+## Recent Modifications
+
+### ZenmodeToolbar CSS Updates
+- Aligned color scheme with MenuBar variables
+- Reduced vertical padding to 8px
+- Used consistent shadow and border-radius
+
+### AIPanel CSS Updates
+- Replaced color variables with MenuBar's color palette
+- Updated background, text, and accent colors
+- Adjusted border-radius and button styling
+
+### MenuBar CSS Updates
+- Removed left padding from `.menu-item-children`
+- Ensured consistent styling across components
+
+### Key Design Principles
+- Consistent color palette using CSS variables
+- Minimalist and professional UI
+- Responsive and clean design
+- Modular component styling
