@@ -204,10 +204,21 @@ function MenuBar() {
 
         console.log('Extracted Document ID:', documentId);
 
+        // DEBUGGING: Log the state of the document before update
+        const documentBeforeUpdate = state.currentProject.documents.find(doc => doc.id === documentId);
+        console.log('Document Before Update:', documentBeforeUpdate);
+
         const updatedDocument = updateDocumentName(documentId, editedDocumentName);
         
+        // DEBUGGING: Log the result of the update
+        console.log('Updated Document Result:', updatedDocument);
+
         if (updatedDocument) {
           setEditingDocumentId(null);
+          
+          // DEBUGGING: Verify the document in the project state
+          const documentAfterUpdate = state.currentProject.documents.find(doc => doc.id === documentId);
+          console.log('Document After Update:', documentAfterUpdate);
         } else {
           setEditedDocumentName(state.currentDocument?.name || '');
           console.error('Failed to update document name');

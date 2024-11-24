@@ -72,6 +72,48 @@ body, html {
     background-color var(--transition-smooth),
     color var(--transition-smooth),
     opacity var(--transition-smooth);
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+/* Webkit (Chrome, Safari, newer versions of Opera) */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background-color: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+*::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Ensure overflow is hidden by default */
+* {
+  overflow: hidden;
+}
+
+/* Re-enable overflow for specific containers that need scrolling */
+.menu-bar-container,
+.ai-messages-container,
+.editor-content-wrapper,
+.main-content-wrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
 }
 
 /* Preserve padding for specific elements */
