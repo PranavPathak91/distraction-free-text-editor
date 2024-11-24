@@ -7,14 +7,14 @@
 
 .editor-content-wrapper {
   flex-grow: 1;
-  overflow: auto;
-  display: flex;
-  justify-content: center;
-  padding: 40px 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  width: 100%;
+  padding: 0;
 }
 
 .editor-content-wrapper > * {
   width: 100%;
-  max-width: 900px;
-  padding: 0 60px;
+  padding: 0;
+  margin: 0;
 }

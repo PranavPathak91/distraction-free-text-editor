@@ -124,8 +124,8 @@
 
 .project-icon-new-chapter {
   margin-left: 8px;
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
+  background-color: transparent;
+  color: var(--color-neutral-500);
   border-radius: 50%;
   width: 18px;
   height: 18px;
@@ -135,11 +135,13 @@
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 .project-icon-new-chapter:hover {
-  background-color: var(--color-primary);
-  color: white;
+  background-color: var(--color-neutral-200);
+  color: var(--color-neutral-700);
+  border-color: var(--color-neutral-300);
 }
 
 .project-icon-delete-chapter {
