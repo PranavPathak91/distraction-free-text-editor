@@ -251,7 +251,7 @@ class DocumentService {
     return document;
   }
 
-  // Update a project
+  // Update project details
   static updateProject(projectId, updates) {
     const projects = this.getProjects();
     const projectIndex = projects.findIndex(p => p.id === projectId);
@@ -260,13 +260,14 @@ class DocumentService {
       throw new Error('Project not found');
     }
 
-    // Update project
+    // Merge updates
     projects[projectIndex] = {
       ...projects[projectIndex],
       ...updates,
       updatedAt: new Date().toISOString()
     };
 
+    // Save updated projects
     this.saveProjects(projects);
 
     return projects[projectIndex];

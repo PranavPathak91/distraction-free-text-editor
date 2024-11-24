@@ -131,9 +131,15 @@ export function TextEditorProvider({ children }) {
         payload: projects 
       });
       
-      // If a project is loaded, ensure it has a default document/chapter
+      // Select the first project and its first document (if exists)
       const firstProject = projects[0];
-      if (!firstProject.documents || firstProject.documents.length === 0) {
+      if (firstProject.documents && firstProject.documents.length > 0) {
+        dispatch({
+          type: ActionTypes.SELECT_DOCUMENT,
+          payload: firstProject.documents[0]
+        });
+      } else {
+        // Only create a default chapter if no documents exist
         const defaultChapter = DocumentService.createDocument(
           firstProject.id, 
           'Chapter 1'
@@ -144,6 +150,10 @@ export function TextEditorProvider({ children }) {
         dispatch({ 
           type: ActionTypes.LOAD_PROJECTS, 
           payload: updatedProjects 
+        });
+        dispatch({
+          type: ActionTypes.SELECT_DOCUMENT,
+          payload: defaultChapter
         });
       }
     } else {
@@ -157,6 +167,10 @@ export function TextEditorProvider({ children }) {
       dispatch({ 
         type: ActionTypes.CREATE_PROJECT, 
         payload: initialProject 
+      });
+      dispatch({
+        type: ActionTypes.SELECT_DOCUMENT,
+        payload: defaultChapter
       });
     }
   }, []);
@@ -176,6 +190,25 @@ export function TextEditorProvider({ children }) {
       type: ActionTypes.SELECT_PROJECT, 
       payload: project 
     });
+  };
+
+  const updateProject = (projectUpdates) => {
+    if (!state.currentProject) {
+      console.error('No project selected');
+      return;
+    }
+
+    const updatedProject = DocumentService.updateProject(
+      state.currentProject.id, 
+      projectUpdates
+    );
+
+    dispatch({ 
+      type: ActionTypes.UPDATE_PROJECT, 
+      payload: updatedProject 
+    });
+
+    return updatedProject;
   };
 
   const createDocument = (documentName) => {
@@ -385,25 +418,6 @@ export function TextEditorProvider({ children }) {
         payload: newCurrentDocument 
       });
     }
-  };
-
-  const updateProject = (projectUpdates) => {
-    if (!state.currentProject) {
-      console.error('No project selected');
-      return;
-    }
-
-    const updatedProject = DocumentService.updateProject(
-      state.currentProject.id, 
-      projectUpdates
-    );
-
-    dispatch({ 
-      type: ActionTypes.UPDATE_PROJECT, 
-      payload: updatedProject 
-    });
-
-    return updatedProject;
   };
 
   // Context value
