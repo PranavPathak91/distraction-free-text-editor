@@ -42,7 +42,10 @@ function TextEditor() {
   }
 
   const handleContentChange = (e) => {
-    updateDocument({ content: e.target.value });
+    const documentId = state.currentDocument?.id;
+    if (documentId) {
+      updateDocument(documentId, { content: e.target.value });
+    }
   };
 
   const handleNameChange = (e) => {
