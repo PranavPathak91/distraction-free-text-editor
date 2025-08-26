@@ -1,56 +1,24 @@
-# Distraction-Free Text Editor 🧘‍♀️
+# AI Fitness App
 
-## Overview
-A minimalist writing tool designed to enhance focus and productivity, featuring an advanced quiet mode.
+This repository contains a minimal scaffold for an AI‑first fitness application.
 
-## Features
-- 🤫 Distraction-free writing mode
-- 📝 Emoji-based interactions
-- 🧭 Clean, responsive UI
-- 📊 Word count and reading time
+## Structure
 
-## Setup and Running
+- `backend/`: FastAPI server with simple AI workout recommendation.
+- `frontend/`: React Native app (Expo) consuming the backend.
 
-### Prerequisites
-- Node.js (v16 or later)
-- npm
+## Backend Setup
 
-### Local Development
-1. Clone the repository
 ```bash
-git clone https://github.com/PranavPathak91/distraction-free-text-editor.git
-cd distraction-free-text-editor
+cd backend
+pip install -r requirements.txt
+uvicorn app:app --reload
 ```
 
-2. Install Frontend Dependencies
+## Frontend Setup
+
 ```bash
 cd frontend
 npm install
-```
-
-3. Start Development Server
-```bash
 npm start
 ```
-
-### GitHub Codespaces
-1. Click "Code" > "Codespaces" > "Create codespace on main"
-2. Codespace will automatically:
-   - Install dependencies
-   - Start development server
-3. Access the app at the forwarded port (usually :3000)
-
-## Development Scripts
-- `npm start`: Start development server
-- `npm run build`: Create production build
-- `npm test`: Run test suite
-
-## Contributing
-1. Fork the repository
-2. Create your feature branch
-3. Commit changes
-4. Push to the branch
-5. Create a Pull Request
-
-## License
-MIT License
